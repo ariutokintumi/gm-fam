@@ -1,14 +1,14 @@
 .container {
-  padding: 0 2rem;
+  background-color: aquamarine;
+  padding: 1rem 2rem;
 }
 
 .main {
   min-height: 100vh;
-  padding: 4rem 0;
+  padding: 1rem 0;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
 }
 
@@ -94,9 +94,35 @@
   line-height: 1.5;
 }
 
+.container__twoSideByside {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.container__a,
+.container__b {
+  flex: 1;
+  max-width: auto;
+  margin: 5px;
+}
+
 @media (max-width: 600px) {
   .grid {
     width: 100%;
     flex-direction: column;
   }
+
+  .container__twoSideByside {
+    flex-direction: column;
+  }
+
+  .container__a,
+  .container__b {
+    flex: 1;
+    max-width: auto;
+    margin: 5px;
+  }
+  
 }
