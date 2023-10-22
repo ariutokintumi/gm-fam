@@ -1,30 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/*
-   
-@jistr0
-
-SC functions (asume que el user ya le dio grant al SC nuevo sobre el NFT a jalar/pull)
-
-------------------
-config general contrato MVP: a. tendra creator fees
- (Done) b. tendra como baseURI la misma que la del contrato original (la saca por el fron para el mvp) c. source contract address modifcar 
- (done)f. Cost per mint (external payable) agregar, este costo indica el costo para crear un nuevo token en el nuevo contrato, el costo es en ETH y se le envia al owner del contrato.
-------------------
-mint done 
- (done)1. se jala el tokenId del SC remoto (recibe como parametros el SCaddress y tokenId), se supone que ya tiene grantee access. 
- (done)2. mintea en el contrato nuevo (este) el tokenId (igual al que recibe) para el user nuevo.
--------------------
-contractOwner done
- (done)1. Es definido al momento de crearse (no es necesariamente el mismo que lo deploya) y puede ser un SAFE.
--------------------
-(done)transferFunds 1. Envia el ETH pedido al wallet que se le pase, contractOwnerrestricted.
-
---------------------
-RESTO DE FUNCIONES
- transfer y todas las funciones normales de un ERC-721, pero sin permisos especiales para el owner, asi es permissionless y trustless.
--------------------   */
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
