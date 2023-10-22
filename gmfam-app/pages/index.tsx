@@ -205,7 +205,9 @@ const Home: NextPage = () => {
                       Creator fees
                       <InputGroup size='sm'>
                         <Input size='sm' type="number" placeholder="" backgroundColor='gray.100' id="getDeployerData__CreatorFees" />
-                        <InputRightAddon children='%' />
+                        <InputRightAddon>
+                        %
+                        </InputRightAddon>
                       </InputGroup>
                     </div>
                   </div>
@@ -237,7 +239,9 @@ const Home: NextPage = () => {
                       Cost per mint
                       <InputGroup size='sm'>
                         <Input size='sm' type="number" placeholder="" backgroundColor='gray.100' id="getDeployerData__CostPerMint" />
-                        <InputRightAddon children='ETH' />
+                        <InputRightAddon>
+                        ETH
+                        </InputRightAddon>
                       </InputGroup>
                     </div>
                   </div>
