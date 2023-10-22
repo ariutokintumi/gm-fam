@@ -97,7 +97,9 @@ const Home: NextPage = () => {
         account: address,
       }).then((data) => {
         console.log(data);
-        ipfsUrl = data.match(/ipfs:\/\/[^/]+/)
+        ipfsUrl = data;
+        ipfsUrl=ipfsUrl.toString();
+        ipfsUrl=ipfsUrl.match(/ipfs:\/\/[^/]+/);
       }).catch((error) => {
         console.log(error);
       });
