@@ -27,14 +27,17 @@ anvil :
 
 NETWORK_ARGS := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
 
-ALBITRUM_TESTNET_ARGS := --rpc-url $(ALBITRUM_RPC_URL) --private-key $(ALBITRUM_KEY) --broadcast --verify --etherscan-api-key $(ALBITRUM_API_KEY) -vvvv
+ALBITRUM_TESTNET_ARGS := --rpc-url $(RPC_URL) --private-key $(PRIVATE) --broadcast --verify --etherscan-api-key $(API_KEY) -vvvv
 compile:
 	forge compile
-
 deployTest:
 	@echo "--==Deploying test contracts in anvil local testnet==--"
 	@forge script script/DeployTest.s.sol:DeployTest $(NETWORK_ARGS)
 
-deployAlbitrumTestnet:
+deploy:
 	@echo "--==Deploying test contracts in Albitrum goerli testnet==--"
-	@forge script script/DeploySystem.s.sol:DeploySystemScript $(ALBITRUM_TESTNET_ARGS)
+	@forge script script/Deploy.s.sol:Deploy $(ALBITRUM_TESTNET_ARGS)
+
+deployNFT:
+	@echo "--==Deploying test contracts in Albitrum goerli testnet==--"
+	@forge script script/DeployNFT.s.sol:DeployNFT $(ALBITRUM_TESTNET_ARGS)

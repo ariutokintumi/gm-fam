@@ -10,16 +10,12 @@ import { Input, RadioGroup, Stack, Radio, InputGroup, InputRightAddon, Checkbox,
 import { FaRegClipboard } from "react-icons/fa6";
 
 import Deployer from '../abis/Deployer.json';
-import nft from '../abis/nft.json';
+import ERC721 from '../abis/ERC721.json';
 import clipboardCopy from 'clipboard-copy';
 
 
-/*
-deploy address:  0x5FbDB2315678afecb367f032d93F642f64180aa3
-  nft address:  0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 
-*/
 
-const deployerAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+const deployerAddress = '0x9a7B0a7d8f032e1f2F41a391bBeF97872C96F3f5';
 
 const CopyButton: React.FC<{ text: string }> = ({ text }) => {
   const handleCopyClick = async () => {
@@ -46,11 +42,11 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     setIsClient(true);
+    
   }, []);
 
 
   const getDeployerData = () => {
-    //inclir inputs y checkboxes
     const inputIds = [
       'getDeployerData__SourceAddress',
       'getDeployerData__CollectionName',
@@ -58,7 +54,6 @@ const Home: NextPage = () => {
       'getDeployerData__CollectionOwner',
       'getDeployerData__CreatorFees',
       'getDeployerData__CostPerMint',
-      'getDeployerData__IPFSUrl',
     ];
     const checkboxIds = [
       'getDeployerData__WitelistByTokenId',
@@ -71,8 +66,8 @@ const Home: NextPage = () => {
       return input.value;
     });
 
-    //marcar cuando falta algun input excepto el de IPFS
-    if (inputs[0] === '' || inputs[1] === '' || inputs[2] === '' || inputs[3] === '' || inputs[4] === '' || inputs[5] === '') {
+    //marcar cuando falta algun input 
+    if (inputs.some((input) => input === '')) {
       alert('Please fren fill all the inputs');
       return;
     }
@@ -89,19 +84,20 @@ const Home: NextPage = () => {
     var creatorFees = inputs[4];
     var costPerMint = inputs[5];
 
+
     var ipfsUrl: any = '';
     if (inputs[6] !== '') {
       ipfsUrl = inputs[6];
     } else {
       readContract({
         address: srcAddress as '0x${string}',
-        abi: nft,
+        abi: ERC721.abi,
         functionName: 'tokenURI',
         args: [],
         account: address,
       }).then((data) => {
         console.log(data);
-        ipfsUrl = data;
+        ipfsUrl = data.match(/ipfs:\/\/[^/]+/)
       }).catch((error) => {
         console.log(error);
       });
@@ -109,12 +105,6 @@ const Home: NextPage = () => {
 
     var whitelistByTokenId = checkboxes[0];
     var whitelistByWalletAddress = checkboxes[1];
-
-
-
-    console.log('inputs', inputs);
-    console.log('checkboxes', checkboxes);
-    console.log('value', value);
 
     prepareWriteContract({
       address: deployerAddress as '0x${string}',
@@ -197,15 +187,6 @@ const Home: NextPage = () => {
                       </Radio>
                     </Stack>
                   </RadioGroup>
-                  {value === '2' &&
-                    <div
-                      style={{
-                        paddingTop: '10px',
-                      }}
-                    >
-                      <Input size='sm' type="text" backgroundColor='gray.100' placeholder="IPFS URL" id="getDeployerData__IPFSUrl" />
-                    </div>
-                  }
                 </div>
                 <div className={styles.container__twoSideByside}>
                   <div className={styles.container__a}>

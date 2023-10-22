@@ -5,13 +5,13 @@ import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import type { AppProps } from 'next/app';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
-  foundry
+  sepolia,
 } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
-    foundry,
+    sepolia,
   ],
   [publicProvider()]
 );

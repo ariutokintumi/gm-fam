@@ -5,11 +5,11 @@ import {Script, console2} from "forge-std/Script.sol";
 import { Deployer } from "../src/deployer.sol";
 import { DigitalCherry } from "../src/test/nft.sol";
 
-contract DeployTest is Script {
+contract Deploy is Script {
     Deployer deploy;
     DigitalCherry nft;
 
-    address adminAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    address adminAddress = 0xF11f8301C76F46733d855ac767BE741FFA9243Bd;
 
     function run() public {
         vm.startBroadcast(adminAddress);
