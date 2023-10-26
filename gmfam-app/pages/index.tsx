@@ -74,7 +74,6 @@ const Home: NextPage = () => {
   const [isClient, setIsClient] = useState(false);
   const [value, setValue] = useState('3');
   const [txData, setTxData] = useState<any>([false, '', '']);
-  const [closeTopContainer, setCloseTopContainer] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -239,32 +238,7 @@ const Home: NextPage = () => {
         />
         <link href="/favicon.png" rel="icon" />
       </Head>
-      { !closeTopContainer && (
-      <div className={styles.topContainer}>
-        <div className={styles.topContainer__xContainer}>
-          <Button
-            className={styles.topContainer__xContainer__xButton}
-            colorScheme='null'
-            onClick={() => setCloseTopContainer(true)}
-          >x</Button>
-        </div>
-        <div className={styles.topContainer__textContainer}>
-          <h1>
-            This is a alpha version of the gm Fam! app.
-          </h1>
-          <p>
-            If you wamt to use the stable version go to:
-          </p>
-          <p>
-          <a href="https://gm-fam-stable.vercel.app/">gm-fam-stable.vercel.app</a>
-          </p>
-          <br/>
-          <p>
-            Made with ❤️ by <a href="https://twitter.com/andrealbiac">@andrealbiac</a>, <a href="https://twitter.com/jistro">@jistro</a> and <a href="https://twitter.com/ariutokintumi">@ariutokintumi</a>
-          </p>
-        </div>
-      </div>
-      )}
+      
       <header>
         <img src="/pink-logo.png" alt="RainbowKit Logo" height={100} width={100} />
         <ConnectButton />
