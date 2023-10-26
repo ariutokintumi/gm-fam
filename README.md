@@ -1,4 +1,4 @@
-![](./visuals/cover.png)
+# ![gm Fam!](./visuals/cover.png)
 
 As seen in [ETHOnline 2023 Async hackathon](https://ethglobal.com/showcase/gm-fam-ayigu)
 
