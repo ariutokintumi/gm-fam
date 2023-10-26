@@ -6,24 +6,60 @@ import { ContractFunctionExecutionError } from 'viem';
 import { useEffect, useState } from 'react';
 import { readContract, prepareWriteContract, writeContract } from '@wagmi/core'
 import { useAccount } from 'wagmi';
-import { Input, RadioGroup, Stack, Radio, InputGroup, InputRightAddon, Checkbox, Button, CardHeader, Card, CardBody, Heading } from '@chakra-ui/react';
-import { FaRegClipboard } from "react-icons/fa6";
+import {
+  Input,
+  RadioGroup,
+  Stack,
+  Radio,
+  InputGroup,
+  InputRightAddon,
+  Checkbox,
+  Button,
+  Card,
+  CardBody,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  IconButton,
+} from '@chakra-ui/react';
+import { FaRegClipboard, FaBars } from "react-icons/fa6";
+import { parseEther } from 'viem';
 
 import Deployer from '../abis/Deployer.json';
+import { erc721ABI } from '@wagmi/core'
+
 import ERC721 from '../abis/ERC721.json';
 import clipboardCopy from 'clipboard-copy';
 
 
+const deployerAddress = '0x9Ee492011c5C3Ac93d4CbB2B6877f23023b49D5D';
+/*'0x2DD654ba96C472044ED51b76D7BCDbe48aEd775B';*/
+// without set tokenURI
+//'0x97eB2Df73bf4dd5dD4957de452Fa664efc50E0B4';
+//w verifided contract
+//'0x2C218888258ae395a28A7bAD5441d0FAdc6653fe';
+// contract without creator fees
+//'0x664eea899d3e954f89a01f7f26c2a518f8ae935f';
+//contract without payable function in safeMnt
+//'0x36bC8BFF90a669948f3A4ACA740Cb2a34840Ba8B';
 
-const deployerAddress = '0x9a7B0a7d8f032e1f2F41a391bBeF97872C96F3f5';
+function getCommonPrefix(str1: any, str2: any) {
+  let i = 0;
+  while (i < str1.length && i < str2.length && str1[i] === str2[i]) {
+    i++;
+  }
+  console.log('Common prefix:');
+  console.log(str1.slice(0, i));
+  return str1.slice(0, i);
+}
 
 const CopyButton: React.FC<{ text: string }> = ({ text }) => {
   const handleCopyClick = async () => {
     try {
       await clipboardCopy(text);
-      alert('Copiado al portapapeles');
     } catch (error) {
-      console.error('Error al copiar el texto:', error);
+      console.error('Error to copy the text:', error);
     }
   };
   return (
@@ -36,17 +72,18 @@ const CopyButton: React.FC<{ text: string }> = ({ text }) => {
 const Home: NextPage = () => {
   const { address, isConnected } = useAccount();
   const [isClient, setIsClient] = useState(false);
-  const [value, setValue] = useState('1');
-  const [uriAux, setUriAux] = useState<any>('');
+  const [value, setValue] = useState('3');
   const [txData, setTxData] = useState<any>([false, '', '']);
+  const [closeTopContainer, setCloseTopContainer] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    
+
   }, []);
 
 
-  const getDeployerData = () => {
+  const getDeployerData = async (): Promise<void> => {
+
     const inputIds = [
       'getDeployerData__SourceAddress',
       'getDeployerData__CollectionName',
@@ -54,6 +91,7 @@ const Home: NextPage = () => {
       'getDeployerData__CollectionOwner',
       'getDeployerData__CreatorFees',
       'getDeployerData__CostPerMint',
+      'getDeployerData__MaxTokens',
     ];
     const checkboxIds = [
       'getDeployerData__WitelistByTokenId',
@@ -83,53 +121,112 @@ const Home: NextPage = () => {
     var collectionOwner = inputs[3];
     var creatorFees = inputs[4];
     var costPerMint = inputs[5];
+    var maxTokens = inputs[6];
 
-
-    var ipfsUrl: any = '';
-    if (inputs[6] !== '') {
-      ipfsUrl = inputs[6];
-    } else {
-      readContract({
-        address: srcAddress as '0x${string}',
-        abi: ERC721.abi,
-        functionName: 'tokenURI',
-        args: [],
-        account: address,
-      }).then((data) => {
-        console.log(data);
-        ipfsUrl = data;
-        ipfsUrl=ipfsUrl.toString();
-        ipfsUrl=ipfsUrl.match(/ipfs:\/\/[^/]+/);
-      }).catch((error) => {
-        console.log(error);
-      });
+    if (parseFloat(creatorFees) >= 100) {
+      alert('Creator fees must be less than 100%');
+      return;
     }
+    //set creatorFees only to two decimals
+    var creatorFeesFloat = parseFloat(creatorFees).toFixed(2);
 
-    var whitelistByTokenId = checkboxes[0];
-    var whitelistByWalletAddress = checkboxes[1];
+    //multipliy by 100 to get the right number and then parse to int to remove decimals
+    var creatorFeesFixed = Math.round(parseFloat(creatorFeesFloat) * 100);
 
-    prepareWriteContract({
-      address: deployerAddress as '0x${string}',
-      abi: Deployer.abi,
-      functionName: 'deployContract',
+    var prefix = '';
+    var hasId = false;
+    var suffix = '';
+    const tokenURIMethods = ['tokenURI', 'uri']; // Acá podemos agregar otros métodos
+    const tokenIdsToTry = [1, 2, 11, 12, 111, 112, 1001, 1002]; // Buscamos 2 tokenID pero sino sigue procurando, ya que a veces no están minteados algunos de numero bajo
+    for (const method of tokenURIMethods) {
 
-      args: [
-        collectionOwner,
-        srcAddress,
-        collectionName,
-        collectionTokenName,
-        ipfsUrl,
-        costPerMint
-      ],
-      account: address,
-    }).then((data) => {
-      writeContract(data).then(() => {
-        setTxData([true, data.result, collectionOwner]);
-      });
-    }).catch((error) => {
-      console.log(error);
-    });
+      for (let i = 0; i < tokenIdsToTry.length; i += 2) {
+        console.log('Trying method', method);
+        console.log('Trying tokenID', tokenIdsToTry[i], 'and', tokenIdsToTry[i + 1]);
+        const tokenId1 = await readContract({
+          address: srcAddress as '0x${string}',
+          abi: erc721ABI,
+          functionName: 'tokenURI',
+          args: [BigInt(tokenIdsToTry[i])],
+          account: address,
+        });
+        const tokenId2 = await readContract({
+          address: srcAddress as '0x${string}',
+          abi: erc721ABI,
+          functionName: 'tokenURI',
+          args: [BigInt(tokenIdsToTry[i + 1])],
+          account: address,
+        });
+        console.log('TokenID1', tokenId1);
+        console.log('TokenID2', tokenId2);
 
+        const urlMatch1 = tokenId1.match(/^(.*:\/\/.*)(\d+)(.*)$/);
+        const urlMatch2 = tokenId2.match(/^(.*:\/\/.*)(\d+)(.*)$/);
+
+        console.log('urlMatch1', urlMatch1);
+        console.log('urlMatch1', urlMatch1?.[1]);
+        console.log('urlMatch2', urlMatch2?.[1]);
+
+        if (!urlMatch1?.[1] || !urlMatch2?.[1]) {
+          console.log("This metadata format is not supported yet");
+          break;
+        }
+
+        if (urlMatch1?.[1] === urlMatch2?.[1]) {
+          console.log('The tokens are all using the same metadata', urlMatch1?.[1]);
+          prefix = urlMatch1?.[1].toString();
+          prefix = getCommonPrefix(urlMatch1?.[1].toString(), urlMatch2?.[1].toString());
+          var suffix1 = urlMatch1?.[3];
+          var suffix2 = urlMatch2?.[3];
+          if (suffix1 === suffix2 && suffix1 !== '') {
+            console.log(`The token baseURI is ${prefix} and the suffix (after N) is ${suffix1}`);
+            hasId = true;
+            suffix = suffix1;
+            console.log(prefix, suffix, hasId);
+          } else {
+            if (urlMatch1?.[2] === '') {
+              console.log(`The token baseURI is ${prefix}`);
+              console.log(prefix, suffix, hasId);
+            } else {
+              console.log(`The token baseURI is ${prefix} only has the tokenID ${urlMatch1?.[2]}`);
+              hasId = true;
+              console.log(prefix, suffix, hasId);
+            }
+          }
+          break;
+        }
+      }
+      if (prefix !== '') {
+
+        prepareWriteContract({
+          address: deployerAddress as '0x${string}',
+          abi: Deployer.abi,
+          functionName: 'deployContract',
+          args: [
+            collectionOwner,
+            srcAddress,
+            collectionName,
+            collectionTokenName,
+            prefix,
+            hasId,
+            suffix,
+            parseEther(costPerMint),
+            creatorFeesFixed,
+            parseInt(maxTokens),
+          ],
+          account: address,
+        }).then((data) => {
+          writeContract(data).then(() => {
+            setTxData([true, data.result, collectionOwner]);
+          }).catch((error) => {
+            console.log(error);
+          });
+        }).catch((error) => {
+          console.log(error);
+        });
+        break;
+      }
+    }
   }
 
   return (
@@ -140,13 +237,63 @@ const Home: NextPage = () => {
           content="gmFam"
           name="gmFam"
         />
-        <link href="/favicon.ico" rel="icon" />
+        <link href="/favicon.png" rel="icon" />
       </Head>
+      { !closeTopContainer && (
+      <div className={styles.topContainer}>
+        <div className={styles.topContainer__xContainer}>
+          <Button
+            className={styles.topContainer__xContainer__xButton}
+            colorScheme='null'
+            onClick={() => setCloseTopContainer(true)}
+          >x</Button>
+        </div>
+        <div className={styles.topContainer__textContainer}>
+          <h1>
+            This is a alpha version of the gm Fam! app.
+          </h1>
+          <p>
+            If you wamt to use the stable version go to:
+          </p>
+          <p>
+          <a href="https://gm-fam-stable.vercel.app/">gm-fam-stable.vercel.app</a>
+          </p>
+          <br/>
+          <p>
+            Made with ❤️ by <a href="https://twitter.com/andrealbiac">@andrealbiac</a>, <a href="https://twitter.com/jistro">@jistro</a> and <a href="https://twitter.com/ariutokintumi">@ariutokintumi</a>
+          </p>
+        </div>
+      </div>
+      )}
       <header>
-        <img src="/logo.png" alt="RainbowKit Logo" height={100} width={100} />
+        <img src="/pink-logo.png" alt="RainbowKit Logo" height={100} width={100} />
+        <ConnectButton />
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            aria-label='Options'
+            icon={<FaBars />}
+            colorScheme='green'
+          />
+          <MenuList >
+            <MenuItem
+              backgroundColor={'gray.600'}
+              color={'white'}
+            >
+              Main page
+            </MenuItem>
+            <MenuItem onClick={() => window.location.href = '/mint'}>
+              Mint
+            </MenuItem>
+            <MenuItem onClick={() => window.location.href = '/goBack'}>
+              Go back to the original collection
+            </MenuItem>
+
+          </MenuList>
+        </Menu>
       </header>
       <main className={styles.main}>
-        <ConnectButton />
+
         {isClient && (
           <div
             style={{
@@ -155,31 +302,60 @@ const Home: NextPage = () => {
           >
             {txData[0] ? (
               <div>
-                <h1
+                <center
                   style={{
-                    color: '#083f99',
-                    fontSize: '30px',
-                    fontWeight: 'bold',
+                    paddingBottom: '20px',
                   }}
                 >
-                  Congratulations fren!
-                </h1>
-                <Card variant='filled'>
-                  <CardBody>
-                    <p>Address of new contract: {txData[1]} <CopyButton text={txData[1]} /></p>
-                    <p>Collection owner: {txData[2]} <CopyButton text={txData[2]} /></p>
+                  <img
+                    src="/mango-congrats.svg"
+                    width={200} />
+                  <h1
+                    style={{
+                      color: '#083f99',
+                      fontSize: '30px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Congratulations fren!
+                  </h1>
+                </center>
+                <Card >
+                  <CardBody backgroundColor={'#98dcd7'}>
+                    <p>Address of new contract:</p>
+                    <p>{txData[1]} <CopyButton text={txData[1]} /></p>
+                    <p>Collection owner:</p>
+                    <p>{txData[2]} <CopyButton text={txData[2]} /></p>
+                    <br />
+                    < Button colorScheme='red' onClick={
+                      () => setTxData([false, '', ''])
+                    }>
+                      Back
+                    </Button>
                   </CardBody>
                 </Card>
+
               </div>
             ) : (
               <>
-                <div>
+                <div
+                  style={{
+                    paddingBottom: '20px',
+                  }}
+                >
                   Source of Collection Smart Contract Address
                   <Input size='sm' type="text" backgroundColor='gray.100' placeholder="To" id="getDeployerData__SourceAddress" />
                 </div>
-                <div>
-                  Metadata
-                  <RadioGroup onChange={setValue} value={value} >
+                <div
+                className={styles.unavailableBox}
+                onChange={(e) => {
+                  alert('This feature is in development');
+                  setValue('3');
+                }}
+                >
+                  Metadata (in development)
+                  <RadioGroup onChange={setValue} value={value} 
+                  >
                     <Stack>
                       <Radio value='1' backgroundColor='gray.100' colorScheme='green'>
                         Use the original one
@@ -201,14 +377,14 @@ const Home: NextPage = () => {
                       <p style={{ fontSize: '12px', color: 'gray' }}>
                         (this can cut the comunity size)
                       </p>
-                      <Input size='sm' type="number" placeholder="" backgroundColor='gray.100' id="getDeployerData__CollectionName" />
+                      <Input size='sm' type="number" placeholder="" backgroundColor='gray.100' id="getDeployerData__MaxTokens" />
                     </div>
                     <div>
                       Creator fees
                       <InputGroup size='sm'>
                         <Input size='sm' type="number" placeholder="" backgroundColor='gray.100' id="getDeployerData__CreatorFees" />
                         <InputRightAddon>
-                        %
+                          %
                         </InputRightAddon>
                       </InputGroup>
                     </div>
@@ -218,20 +394,24 @@ const Home: NextPage = () => {
                       New Token Name
                       <Input size='sm' type="text" placeholder="" backgroundColor='gray.100' id="getDeployerData__CollectionTokenName" />
                     </div>
-                    <div>
-                      Whitelist (optional)
-                      <Stack spacing={1}>
+                    <div
+                      className={styles.unavailableBox}
+                      onChange={(e) => {
+                        alert('This feature is in development');
+                        setValue('3');
+                      }}
+                    >
+                      Whitelist (In development)
+                      <Stack spacing={0}>
                         <Checkbox
                           colorScheme='green'
-                          id='getDeployerData__WitelistByTokenId'
-                          defaultChecked
+                          id=''
                         >
                           By original token ID (Number)
                         </Checkbox>
                         <Checkbox
                           colorScheme='green'
-                          id='getDeployerData__WitelistByWalletAddress'
-                          defaultChecked
+                          id=''
                         >
                           By wallet address
                         </Checkbox>
@@ -242,7 +422,7 @@ const Home: NextPage = () => {
                       <InputGroup size='sm'>
                         <Input size='sm' type="number" placeholder="" backgroundColor='gray.100' id="getDeployerData__CostPerMint" />
                         <InputRightAddon>
-                        ETH
+                          ETH
                         </InputRightAddon>
                       </InputGroup>
                     </div>
@@ -270,11 +450,6 @@ const Home: NextPage = () => {
 
       </main>
 
-      <footer className={styles.footer}>
-        <a href="https://rainbow.me" rel="noopener noreferrer" target="_blank">
-          Made with ❤️ by your frens at 🌈
-        </a>
-      </footer>
     </div >
 
   );

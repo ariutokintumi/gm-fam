@@ -18,6 +18,19 @@ contract DeployTest is Script {
         console2.log("deploy address: ", address(deploy));
         console2.log("nft address: ", address(nft));
         nft.safeMint(adminAddress);
+        address gmFam =deploy.deployContract(
+            adminAddress,
+            address(nft),
+            "ForkCherry",
+            "FCHY",
+            "ipfs://QmWx3cFwFGAxd43AutywbqykKFDcvuvo8zG75Z7rKbzTPr/",
+            true,
+            ".json",
+            0,
+            0,
+            100
+        );
+        console2.log("gmFam address: ", gmFam);
 
     }
 }
