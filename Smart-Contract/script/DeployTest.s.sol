@@ -13,12 +13,13 @@ contract DeployTest is Script {
 
     function run() public {
         vm.startBroadcast(adminAddress);
-        deploy = new Deployer();
+        deploy = new Deployer(adminAddress);
         nft = new DigitalCherry(adminAddress);
         console2.log("deploy address: ", address(deploy));
         console2.log("nft address: ", address(nft));
         nft.safeMint(adminAddress);
-        address gmFam =deploy.deployContract(
+        //send 0.02 eth to deployer
+        address gmFam =deploy.deployContract{value: 0.021 ether}(
             adminAddress,
             address(nft),
             "ForkCherry",

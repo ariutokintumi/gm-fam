@@ -13,7 +13,7 @@ contract Deploy is Script {
 
     function run() public {
         vm.startBroadcast(adminAddress);
-        deploy = new Deployer();
+        deploy = new Deployer(adminAddress);
         nft = new DigitalCherry(adminAddress);
         console2.log("deploy address: ", address(deploy));
         console2.log("nft address: ", address(nft));

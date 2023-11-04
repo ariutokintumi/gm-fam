@@ -8,11 +8,11 @@ import { DigitalCherry } from "../src/test/nft.sol";
 contract DeployGmFam is Script {
     Deployer deploy;
 
-    address adminAddress = 0xcb9C3Ad82b9255b3AB86e774fcAE787428e4b173;
+    address adminAddress = 0xF11f8301C76F46733d855ac767BE741FFA9243Bd;
 
     function run() public {
         vm.startBroadcast(adminAddress);
-        deploy = new Deployer();
+        deploy = new Deployer(adminAddress);
         console2.log("deploy address: ", address(deploy));
 
     }
